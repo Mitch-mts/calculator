@@ -20,6 +20,8 @@ class MainActivity : AppCompatActivity() {
     var myFormatter = DecimalFormat("#######.######")
     var history: String = ""
     var currentString: String  = ""
+    var dotControl: Boolean = true
+    var buttonEqualsControl: Boolean = false
 
 
 
@@ -86,8 +88,14 @@ class MainActivity : AppCompatActivity() {
 
         mainBinding.btnDelete.setOnClickListener {
             number?.let {
-                number = it.substring(0, it.length - 1)
-                mainBinding.textViewResult.text = number
+                if(it.length == 1) {
+                    onButtonACClicked()
+                } else{
+                    number = it.substring(0, it.length - 1)
+                    mainBinding.textViewResult.text = number
+                    dotControl = number!!.contains(".")
+                }
+
             }
         }
 
@@ -111,6 +119,7 @@ class MainActivity : AppCompatActivity() {
             status = "/"
             operator = false
             number = null
+            dotControl = true
         }
 
         mainBinding.btnMultiply.setOnClickListener {
@@ -133,6 +142,7 @@ class MainActivity : AppCompatActivity() {
             status = "*"
             operator = false
             number = null
+            dotControl = true
         }
 
         mainBinding.btnMinus.setOnClickListener {
@@ -155,6 +165,7 @@ class MainActivity : AppCompatActivity() {
             status = "-"
             operator = false
             number = null
+            dotControl = true
         }
 
         mainBinding.btnPlus.setOnClickListener {
@@ -177,6 +188,7 @@ class MainActivity : AppCompatActivity() {
             status = "+"
             operator = false
             number = null
+            dotControl = true
         }
 
         mainBinding.btnEqual.setOnClickListener {
@@ -198,16 +210,31 @@ class MainActivity : AppCompatActivity() {
             }
 
             operator = false
+            dotControl = true
+            buttonEqualsControl = true
         }
 
         mainBinding.btnDot.setOnClickListener {
-            number = if(number == null) {
-                "0."
-            } else {
-                "$number."
+
+            if(dotControl) {
+                number = if(number == null) {
+                    "0."
+                } else if(buttonEqualsControl) {
+                    if(mainBinding.textViewResult.text.toString().contains(".")) {
+                        mainBinding.textViewResult.text.toString()
+                    } else {
+                        mainBinding.textViewResult.text.toString().plus(".")
+                    }
+                }
+                else {
+                    "$number."
+                }
+
+                mainBinding.textViewResult.text = number
             }
 
-            mainBinding.textViewResult.text = number
+            dotControl = false
+
         }
     }
 
@@ -218,18 +245,33 @@ class MainActivity : AppCompatActivity() {
         lastNumber = 0.0
         mainBinding.textViewResult.text = "0"
         mainBinding.textViewHistory.text = ""
+        dotControl = true
     }
 
     fun onNumberClick(clickedNumber: String) {
 
         if(number == null) {
             number = clickedNumber
-        } else {
+        } else if(buttonEqualsControl) {
+
+            number = if(dotControl) {
+                clickedNumber
+            } else {
+                mainBinding.textViewResult.text.toString().plus(clickedNumber)
+            }
+
+            firstNumber = number!!.toDouble()
+            lastNumber = 0.0
+            status = null
+            mainBinding.textViewHistory.text = ""
+        }
+        else {
             number += clickedNumber
         }
 
         mainBinding.textViewResult.text = number
         operator = true
+        buttonEqualsControl = false
     }
 
     fun plus() {
