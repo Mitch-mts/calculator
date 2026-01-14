@@ -1,10 +1,13 @@
 package com.example.calculator
 
+import android.content.Intent
+import android.content.SharedPreferences
 import android.icu.text.DecimalFormat
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.calculator.databinding.ActivityMainBinding
@@ -22,6 +25,7 @@ class MainActivity : AppCompatActivity() {
     var currentString: String  = ""
     var dotControl: Boolean = true
     var buttonEqualsControl: Boolean = false
+    lateinit var sharedPreferences: SharedPreferences
 
 
 
@@ -236,6 +240,21 @@ class MainActivity : AppCompatActivity() {
             dotControl = false
 
         }
+
+        mainBinding.toolBar.setOnMenuItemClickListener { item ->
+            when(item.itemId) {
+                R.id.settings_item -> {
+                    val intent = Intent(this@MainActivity, ChangeThemeActivity::class.java)
+                    startActivity(intent)
+                    return@setOnMenuItemClickListener true
+                }
+                else -> {
+                    return@setOnMenuItemClickListener false
+                }
+
+            }
+
+        }
     }
 
     fun onButtonACClicked() {
@@ -305,6 +324,53 @@ class MainActivity : AppCompatActivity() {
             mainBinding.textViewResult.text = myFormatter.format(firstNumber)
         }
 
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        sharedPreferences = this.getSharedPreferences("Dark Theme", MODE_PRIVATE)
+        val isDarkMode = sharedPreferences.getBoolean("switch", false)
+
+        if(isDarkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        sharedPreferences = this.getSharedPreferences("Calculations", MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("history", mainBinding.textViewHistory.text.toString())
+        editor.putString("result", mainBinding.textViewResult.text.toString())
+        editor.putBoolean("operator", operator)
+        editor.putBoolean("buttonEqualsControl", buttonEqualsControl)
+        editor.putBoolean("dotControl", dotControl)
+        editor.putString("status", status)
+        editor.putString("number", number)
+        editor.putString("firstNumber", firstNumber.toString())
+        editor.putString("lastNumber", lastNumber.toString())
+        editor.apply()
+
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        sharedPreferences = this.getSharedPreferences("Calculations", MODE_PRIVATE)
+        mainBinding.textViewHistory.text = sharedPreferences.getString("history", "")
+        mainBinding.textViewResult.text = sharedPreferences.getString("result", "")
+        operator = sharedPreferences.getBoolean("operator", false)
+        buttonEqualsControl = sharedPreferences.getBoolean("buttonEqualsControl", false)
+        dotControl = sharedPreferences.getBoolean("dotControl", true)
+        status = sharedPreferences.getString("status", null)
+        number = sharedPreferences.getString("number", null)
+        firstNumber = sharedPreferences.getString("firstNumber", "0.0")!!.toDouble()
+        lastNumber = sharedPreferences.getString("lastNumber", "0.0")!!.toDouble()
 
     }
 }

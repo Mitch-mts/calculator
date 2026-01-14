@@ -6,4 +6,6 @@
     <color name="text_color">#FF000000</color>
     <color name="background_color">#FFFFFFFF</color>
     <color name="orange">#FF5722</color>
+    <color name="switch_thumb_color">#FF3700B3</color>
+    <color name="switch_track_color">#FFBB86FC</color>
 </resources>
